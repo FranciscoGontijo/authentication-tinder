@@ -54,6 +54,25 @@ app.post('/createnewuser', async (req, res) => {
 });
 
 //Login (verify user email and password) if match retrieve user data
+app.post('/login', async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    try {
+        const check = await userModel.findOne({ email: email })
+        const isPasswordMatch = await bcrypt.compare(password, check.password);
+        if (!check) {
+            res.send("Email not found");
+        } else if (!isPasswordMatch) {
+            res.send("Password incorrect");
+        } else {
+            //login
+            res.send("Verified")
+        }
+    } catch (error) {
+        res.send("Wrong detail")
+    }
+});
 
 // listening port
 const PORT = process.env.PORT || 5000;
