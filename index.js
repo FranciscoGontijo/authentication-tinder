@@ -22,20 +22,35 @@ app.get('/', function (req, res) {
 
 //Register new user
 app.post('/createnewuser', async (req, res) => {
-    const name = req.body.userName;
-    const email = req.body.userEmail;
+    const name = req.body.name;
+    const email = req.body.email;
     const password = req.body.password;
+
     const user = {
         name: name,
         email: email,
         password: password
     };
-    try {
-        const newUser = await userModel.create(user);
-        res.json(newUser);
-    } catch (err) {
-        res.status(500).send(err);
-    }
+
+    //check if user already exists and add it if not
+    const existingUser = await userModel.findOne({ email: email });
+    if (existingUser) {
+        res.send("One account with this Email already exists.");
+    } else {
+        try {
+            // hash password before insert it at database
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            user.password = hashedPassword // replace password inside user object
+
+
+            const newUser = await userModel.create(user);
+            res.json(newUser);
+        } catch (err) {
+            res.status(500).send(err);
+        }
+    };
+
 });
 
 //Login (verify user email and password) if match retrieve user data
