@@ -20,6 +20,25 @@ app.get('/', function (req, res) {
     res.status(200).send(`Welcome to login , sign-up api`);
 });
 
+//Register new user
+app.post('/createnewuser', async (req, res) => {
+    const name = req.body.userName;
+    const email = req.body.userEmail;
+    const password = req.body.password;
+    const user = {
+        name: name,
+        email: email,
+        password: password
+    };
+    try {
+        const newUser = await userModel.create(user);
+        res.json(newUser);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+//Login (verify user email and password) if match retrieve user data
 
 // listening port
 const PORT = process.env.PORT || 5000;
