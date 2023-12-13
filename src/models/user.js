@@ -16,6 +16,10 @@ const userSchema = mongoose.Schema({
         type: String,
         required: true,
         minlength: 8
+    },
+    likedList: {
+        type: [String],
+        required: false
     }
 });
 
