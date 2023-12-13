@@ -7,6 +7,7 @@ const bodyparser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const db = require('./src/mongo/connection');
 const userModel = require('./src/models/user');
+const cors = require('cors');
 
 const app = express();
 
@@ -14,11 +15,17 @@ const app = express();
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 app.use(cookieParser());
+app.use(cors());
 
 //Requests
 app.get('/', function (req, res) {
     res.status(200).send(`Welcome to login , sign-up api`);
 });
+
+/*
+ Storing sensitive information such as passwords in plain text in the request body (req.body) is not recommended. 
+ Consider using HTTPS and possibly implementing token-based authentication (like JWT) instead of handling passwords directly. 
+ */
 
 //Register new user
 app.post('/createnewuser', async (req, res) => {
@@ -45,7 +52,7 @@ app.post('/createnewuser', async (req, res) => {
 
 
             const newUser = await userModel.create(user);
-            res.json(newUser);
+            res.json(newUser.email);
         } catch (err) {
             res.status(500).send(err);
         }
@@ -54,27 +61,38 @@ app.post('/createnewuser', async (req, res) => {
 });
 
 //Login (verify user email and password) if match retrieve user data
-app.get('/login', async (req, res) => {
+app.post('/login', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
 
     try {
-        const check = await userModel.findOne({ email: email })
-        const isPasswordMatch = null;
-        if (check) {
-            isPasswordMatch = await bcrypt.compare(password, check.password);
+        const user = await userModel.findOne({ email: email });
+        if (!user) {
+            return res.status(404).send("Email not found");
         }
-        if (!check) {
-            res.send("Email not found");
-        } else if (!isPasswordMatch) {
-            res.send("Password incorrect");
-        } else {
-            //login
-            //Login and retrive user data
-            res.send("Verified")
+
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if (!isPasswordMatch) {
+            return res.status(401).send("Password incorrect");
         }
+
+        // Here, you might generate a JWT token for authentication and send it back as a response
+        // Example: const token = generateToken(user);
+
+        res.status(200).json(user.email);
     } catch (error) {
-        res.send("Wrong detail")
+        res.status(500).send("Internal server error");
+    }
+});
+
+//Matching algorithm
+app.get('/chat', (req, res) => {
+    const email = req.body.email;
+
+    try {
+        
+    } catch (error) {
+        
     }
 });
 
