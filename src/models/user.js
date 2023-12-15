@@ -20,6 +20,9 @@ const userSchema = mongoose.Schema({
     likedList: {
         type: [String],
         required: false
+    },
+    photoUrl: {
+        type: String
     }
 });
 
