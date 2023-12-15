@@ -85,14 +85,33 @@ app.post('/login', async (req, res) => {
     }
 });
 
+//GET user list to display at home page swiper cards
+app.get('/userlist', async (req, res) => {
+    const email = req.body.email;
+
+    try {
+        const userlist = await userModel.find();
+        if (!userlist || userlist.length === 0) {
+            console.log("User list is empty or not retrieved properly.");
+            return res.status(404).send("User list not found");
+        };
+
+        const responseUserList = userlist.filter((user) => user.email !== email);
+        res.status(200).json(responseUserList);
+    } catch (error) {
+        console.error("Error fetching user list:", error);
+        res.status(500).send("Internal server error");
+    }
+});
+
 //Matching algorithm
 app.get('/chat', (req, res) => {
     const email = req.body.email;
 
     try {
-        
+
     } catch (error) {
-        
+
     }
 });
 
