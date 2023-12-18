@@ -1,3 +1,4 @@
+require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
@@ -8,6 +9,8 @@ const cookieParser = require('cookie-parser');
 const db = require('./src/mongo/connection');
 const userModel = require('./src/models/user');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const authenticateToken = require('./src/middlewares/auth');
 
 const app = express();
 
@@ -78,16 +81,18 @@ app.post('/login', async (req, res) => {
 
         // Here, you might generate a JWT token for authentication and send it back as a response
         // Example: const token = generateToken(user);
+        const tokenuser = { email: email}
+        const accessToken = jwt.sign(tokenuser, process.env.ACCESS_TOKEN_SECRET);
 
-        res.status(200).json(user.email);
+        res.status(200).json({ accessToken: accessToken });
     } catch (error) {
         res.status(500).send("Internal server error");
     }
 });
 
 //GET user list to display at home page swiper cards
-app.get('/userlist', async (req, res) => {
-    const email = req.body.email;
+app.get('/userlist', authenticateToken, async (req, res) => {
+    const email = req.user.email;
 
     try {
         const userlist = await userModel.find();
