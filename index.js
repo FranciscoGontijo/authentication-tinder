@@ -81,7 +81,7 @@ app.post('/login', async (req, res) => {
 
         // Here, you might generate a JWT token for authentication and send it back as a response
         // Example: const token = generateToken(user);
-        const tokenuser = { email: email}
+        const tokenuser = { email: email }
         const accessToken = jwt.sign(tokenuser, process.env.ACCESS_TOKEN_SECRET);
 
         res.status(200).json({ accessToken: accessToken, user: user });
@@ -101,7 +101,16 @@ app.get('/userlist', authenticateToken, async (req, res) => {
             return res.status(404).send("User list not found");
         };
 
-        const responseUserList = userlist.filter((user) => user.email !== email);
+        const responseUserList = userlist
+            .filter((user) => user.email !== email)
+            .map((user) => {
+                // Convert ObjectId to string for _id field
+                return {
+                    ...user._doc,
+                    _id: user._id.toString(), 
+                };
+            });
+
         res.status(200).json(responseUserList);
     } catch (error) {
         console.error("Error fetching user list:", error);
