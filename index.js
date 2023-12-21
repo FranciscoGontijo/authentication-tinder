@@ -84,7 +84,7 @@ app.post('/login', async (req, res) => {
         const tokenuser = { email: email}
         const accessToken = jwt.sign(tokenuser, process.env.ACCESS_TOKEN_SECRET);
 
-        res.status(200).json({ accessToken: accessToken });
+        res.status(200).json({ accessToken: accessToken, user: user });
     } catch (error) {
         res.status(500).send("Internal server error");
     }
