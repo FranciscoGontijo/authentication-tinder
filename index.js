@@ -107,7 +107,7 @@ app.get('/userlist', authenticateToken, async (req, res) => {
                 // Convert ObjectId to string for _id field
                 return {
                     ...user._doc,
-                    _id: user._id.toString(), 
+                    _id: user._id.toString(),
                 };
             });
 
@@ -132,10 +132,16 @@ app.put('/likeuser/:userid', authenticateToken, async (req, res) => {
         }
 
         // Add the likedUserId to the likedUsers array
-        loggedInUser.likedList.push(likedUserId);
-        await loggedInUser.save();
+        //Check if liked user is already at your liked list, if not add. Otherwise dont add
+        if (loggedInUser.likedList.includes(likedUserId)) {
+            res.status(200).json({ message: 'User already liked' });
+        } else {
+            loggedInUser.likedList.push(likedUserId);
+            await loggedInUser.save();
 
-        res.status(200).json({ message: 'User added to liked users' });
+            res.status(200).json({ message: 'User added to liked users' });
+        }
+        
     } catch (error) {
         res.status(500).send("Internal server error" + error);
     }
