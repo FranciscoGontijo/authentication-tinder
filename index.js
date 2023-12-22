@@ -118,6 +118,30 @@ app.get('/userlist', authenticateToken, async (req, res) => {
     }
 });
 
+//PUT request to update liked Array;
+app.put('/likeuser/:userid', authenticateToken, async (req, res) => {
+    const email = req.user.email;
+    const likedUserId = req.params.userid;
+    console.log(email, likedUserId);
+
+    try {
+        const loggedInUser = await userModel.findOne({ email: email });
+
+        if (!loggedInUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Add the likedUserId to the likedUsers array
+        loggedInUser.likedList.push(likedUserId);
+        await loggedInUser.save();
+
+        res.status(200).json({ message: 'User added to liked users' });
+    } catch (error) {
+        res.status(500).send("Internal server error" + error);
+    }
+
+});
+
 //Matching algorithm
 app.get('/chat', (req, res) => {
     const email = req.body.email;
