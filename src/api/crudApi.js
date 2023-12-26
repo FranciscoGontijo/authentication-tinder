@@ -102,7 +102,7 @@ router.get('/userlist', authenticateToken, async (req, res) => {
     }
 });
 
-//PUT request to update liked Array;
+//PUT request to update liked Array
 router.put('/likeuser/:userid', authenticateToken, async (req, res) => {
     const email = req.user.email;
     const likedUserId = req.params.userid;
