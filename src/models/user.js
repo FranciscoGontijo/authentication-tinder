@@ -24,6 +24,10 @@ const userSchema = mongoose.Schema({
     photoUrl: {
         type: String,
         required: false
+    },
+    matchedList: {
+        type: [String],
+        required: false
     }
 });
 
