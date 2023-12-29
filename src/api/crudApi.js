@@ -125,10 +125,18 @@ router.put('/likeuser/:userid', authenticateToken, async (req, res) => {
 
         const likedUser = await userModel.findOne({ _id: likedUserId });
 
-        // Add to matched list if matched
+        // Add to matched list if matched and create a chat object
         if (likedUser.likedList.includes(loggedInUser._id.toString()) && !loggedInUser.matchedList.includes(likedUserId)) {
+            //Add to matched list
             likedUser.matchedList.push(loggedInUser._id.toString());
             loggedInUser.matchedList.push(likedUserId);
+            //Create chat object
+            const chatObj = {
+                chat: [],
+                users: [loggedInUser._id.toString(), likedUserId]
+            }
+            loggedInUser.chatList.push(chatObj);
+            likedUser.chatList.push(chatObj);
 
             await likedUser.save();
             await loggedInUser.save();
@@ -155,6 +163,8 @@ router.get('/matchedlist', authenticateToken, async (req, res) => {
         if (!loggedInUser) {
             return res.status(404).json({ message: 'User not found' });
         }
+
+        //Retreive last message to display at matched list
     
         const userDetailsPromises = loggedInUser.matchedList.map(async (user) => {
             const userDetails = await userModel.findOne({ _id: user }, { name: 1, photoUrl: 1, _id: 0 });
