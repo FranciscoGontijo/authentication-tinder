@@ -1,4 +1,4 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema({
     name: {
@@ -28,7 +28,19 @@ const userSchema = mongoose.Schema({
     matchedList: {
         type: [String],
         required: false
-    }
+    },
+    chatList: [
+        {
+            chat: [
+                {
+                    message: String,
+                    userId: String, // User ID as string
+                    timestamp: { type: Date, default: Date.now }
+                }
+            ],
+            users: [String] // Array of user IDs involved in the chat
+        }
+    ]
 });
 
 module.exports = mongoose.model('Profiles', userSchema);
