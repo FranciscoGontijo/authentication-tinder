@@ -35,7 +35,7 @@ router.post('/createnewuser', async (req, res) => {
             // hash password before insert it at database
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
-            user.password = hashedPassword // replace password inside user object
+            user.password = hashedPassword; // replace password inside user object
 
 
             const newUser = await userModel.create(user);
@@ -121,7 +121,7 @@ router.put('/likeuser/:userid', authenticateToken, async (req, res) => {
         } else {
             loggedInUser.likedList.push(likedUserId);
             await loggedInUser.save();
-        }
+        };
 
         const likedUser = await userModel.findOne({ _id: likedUserId });
 
@@ -134,7 +134,7 @@ router.put('/likeuser/:userid', authenticateToken, async (req, res) => {
             const chatObj = {
                 chat: [],
                 users: [loggedInUser._id.toString(), likedUserId]
-            }
+            };
             loggedInUser.chatList.push(chatObj);
             likedUser.chatList.push(chatObj);
 
@@ -142,13 +142,13 @@ router.put('/likeuser/:userid', authenticateToken, async (req, res) => {
             await loggedInUser.save();
 
             message = 'You got a Match';
-        }
+        };
 
         res.status(200).json({ message: message });
 
     } catch (error) {
         res.status(500).send("Internal server error" + error);
-    }
+    };
 
 });
 
@@ -159,30 +159,30 @@ router.get('/matchedlist', authenticateToken, async (req, res) => {
 
     try {
         const loggedInUser = await userModel.findOne({ email: email });
-    
+
         if (!loggedInUser) {
             return res.status(404).json({ message: 'User not found' });
-        }
+        };
 
         //Retreive last message to display at matched list
-    
+
         const userDetailsPromises = loggedInUser.matchedList.map(async (user) => {
-            const userDetails = await userModel.findOne({ _id: user }, { name: 1, photoUrl: 1, _id: 0 });
+            const userDetails = await userModel.findOne({ _id: user }, { name: 1, photoUrl: 1, _id: 1 });
             return userDetails;
         });
-    
+
         const userDetailsResults = await Promise.all(userDetailsPromises);
-    
+
         userDetailsResults.forEach((userDetails) => {
             if (userDetails) {
-                completeMatchedList.push({ name: userDetails.name, photoUrl: userDetails.photoUrl });
+                completeMatchedList.push({ name: userDetails.name, photoUrl: userDetails.photoUrl, _id: userDetails._id.toString() });
             }
         });
-    
+
         if (completeMatchedList.length === 0) {
             return res.status(404).json({ message: 'No matched users found' });
         }
-    
+
         res.status(200).json(completeMatchedList);
     } catch (error) {
         console.error('Error fetching matched users:', error);
@@ -190,4 +190,10 @@ router.get('/matchedlist', authenticateToken, async (req, res) => {
     }
 });
 
-module.exports = router
+//GET chat messages(get complete chat or just last 20 messages to display at chat window)
+
+
+//PUT chat messages(update the chat array with the new messages that was sent)
+//If you get just the last 20, you need to make the logic to update the chat array just with the new messages. 
+
+module.exports = router;
