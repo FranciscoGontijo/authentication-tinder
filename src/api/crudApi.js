@@ -191,7 +191,25 @@ router.get('/matchedlist', authenticateToken, async (req, res) => {
 });
 
 //GET chat messages(get complete chat or just last 20 messages to display at chat window)
+router.get('/chat/:userid', authenticateToken, async (req, res) => {
+    const email = req.user.email;
+    const likedUserId = req.params.userid;
 
+    try {
+        const loggedInUser = await userModel.findOne({ email });
+
+        if (!loggedInUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const chatObj = loggedInUser.chatList.find(chatItem => chatItem.users.includes(loggedInUser._id.toString()) && chatItem.users.includes(likedUserId));
+        console.log(chatObj);
+        res.status(200).json(chatObj.chat);
+    } catch (error) {
+        console.error('Error fetching matched users:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    };
+});
 
 //PUT chat messages(update the chat array with the new messages that was sent)
 //If you get just the last 20, you need to make the logic to update the chat array just with the new messages. 
