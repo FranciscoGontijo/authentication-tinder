@@ -8,9 +8,9 @@ const init = (server) => {
     io.on('connection', socket => {
         console.log('a user connected :D');
         
-        socket.on('chat message', msg => {
+        socket.on('send message', msg => {
             console.log(msg);
-            io.emit('chat message', msg);
+            io.emit('receive message', msg);
         });
     
         socket.on('user', user => {
@@ -19,4 +19,4 @@ const init = (server) => {
     });
 };
 
-module.exports = { init }
+module.exports = { init };

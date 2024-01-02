@@ -33,3 +33,5 @@ app.listen(PORT, () => {
 
 //User socket for chat message handling
 socketHandler.init(server);
+const port = 8080;
+server.listen(port, () => console.log('server running on port ' + port));
