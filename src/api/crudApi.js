@@ -39,7 +39,11 @@ router.post('/createnewuser', async (req, res) => {
 
 
             const newUser = await userModel.create(user);
-            res.json(newUser.email);
+
+            const tokenuser = { email: email }
+            const accessToken = jwt.sign(tokenuser, process.env.ACCESS_TOKEN_SECRET);
+
+            res.status(200).json({ accessToken: accessToken, user: user });
         } catch (err) {
             res.status(500).send(err);
         }
