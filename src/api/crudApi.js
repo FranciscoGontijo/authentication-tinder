@@ -8,12 +8,6 @@ const authenticateToken = require('../middlewares/auth');
 
 const router = express.Router();
 
-//Requests
-router.get('/', function (req, res) {
-    res.status(200).send(`Welcome to login , sign-up api`);
-});
-
-
 //POST Register new user
 router.post('/createnewuser', async (req, res) => {
     const name = req.body.name;
@@ -38,9 +32,9 @@ router.post('/createnewuser', async (req, res) => {
             user.password = hashedPassword; // replace password inside user object
 
 
-            const newUser = await userModel.create(user);
+            await userModel.create(user);
 
-            const tokenuser = { email: email }
+            const tokenuser = { email: email };
             const accessToken = jwt.sign(tokenuser, process.env.ACCESS_TOKEN_SECRET);
 
             res.status(200).json({ accessToken: accessToken, user: user });
@@ -69,8 +63,7 @@ router.post('/login', async (req, res) => {
 
         // Here, you might generate a JWT token for authentication and send it back as a response
         // Example: const token = generateToken(user);
-        const tokenuser = { email: email }
-        const accessToken = jwt.sign(tokenuser, process.env.ACCESS_TOKEN_SECRET);
+        const accessToken = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET);
 
         res.status(200).json({ accessToken: accessToken, user: user });
     } catch (error) {
@@ -198,6 +191,8 @@ router.get('/matchedlist', authenticateToken, async (req, res) => {
 router.get('/chat/:userid', authenticateToken, async (req, res) => {
     const email = req.user.email;
     const likedUserId = req.params.userid;
+    // const page = 1;
+    // const pageSize = 20;
 
     try {
         const loggedInUser = await userModel.findOne({ email });
@@ -207,7 +202,11 @@ router.get('/chat/:userid', authenticateToken, async (req, res) => {
         }
 
         const chatObj = loggedInUser.chatList.find(chatItem => chatItem.users.includes(loggedInUser._id.toString()) && chatItem.users.includes(likedUserId));
-        console.log(chatObj);
+
+        if (!chatObj) {
+            return res.status(404).json({ message: 'Chat room not found' });
+        }
+
         res.status(200).json(chatObj.chat);
     } catch (error) {
         console.error('Error fetching matched users:', error);
@@ -216,6 +215,46 @@ router.get('/chat/:userid', authenticateToken, async (req, res) => {
 });
 
 //PUT chat messages(update the chat array with the new messages that was sent)
+router.post('/chatupdate/:userid', authenticateToken, async (req, res) => {
+    const chatArray = req.body.chat;
+    const likedUserId = req.params.userid;
+    const email = req.user.email;
+
+    try {
+        const loggedInUser = await userModel.findOne({ email });
+        const likedUser = await userModel.findOne({ _id: likedUserId });
+
+        if (!loggedInUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const chatItemToUpdate = loggedInUser.chatList.find(chatItem => chatItem.users.includes(loggedInUser._id.toString()) && chatItem.users.includes(likedUserId));
+        const otherUserChatItemToUpdate = likedUser.chatList.find(chatItem => chatItem.users.includes(loggedInUser._id.toString()) && chatItem.users.includes(likedUserId));
+
+        if (!chatItemToUpdate) {
+            return res.status(404).json({ message: 'Chat item not found' });
+        };
+
+        console.log(chatItemToUpdate);
+        console.log(otherUserChatItemToUpdate);
+
+        chatItemToUpdate.chat = chatArray;
+        otherUserChatItemToUpdate.chat = chatArray;
+
+        console.log(chatItemToUpdate);
+        console.log(otherUserChatItemToUpdate);
+
+        // Save the changes to the loggedInUser
+        await loggedInUser.save();
+        await likedUser.save();
+
+        res.status(200).json({ message: 'Chat array updated successfully' });
+
+    } catch (error) {
+        console.error('Error fetching matched users:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 //If you get just the last 20, you need to make the logic to update the chat array just with the new messages. 
 
 module.exports = router;
