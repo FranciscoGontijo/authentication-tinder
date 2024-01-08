@@ -33,9 +33,10 @@ const userSchema = mongoose.Schema({
         {
             chat: [
                 {
+                    name: String,
                     message: String,
                     userId: String, // User ID as string
-                    timestamp: { type: Date, default: Date.now }
+                    //timestamp: { type: Date, default: Date.now }
                 }
             ],
             users: [String] // Array of user IDs involved in the chat
