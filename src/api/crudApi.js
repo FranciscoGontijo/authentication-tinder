@@ -162,18 +162,27 @@ router.get('/matchedlist', authenticateToken, async (req, res) => {
         };
 
         //Retreive last message to display at matched list
-
+        
         const userDetailsPromises = loggedInUser.matchedList.map(async (user) => {
-            const userDetails = await userModel.findOne({ _id: user }, { name: 1, photoUrl: 1, _id: 1 });
-            return userDetails;
+            let userDetails = await userModel.findOne({ _id: user }, { name: 1, photoUrl: 1, _id: 1 });
+
+            const chatObj = loggedInUser.chatList.find(chatItem => chatItem.users.includes(loggedInUser._id.toString()) && chatItem.users.includes(user));
+
+            const lastMessage = chatObj.chat[chatObj.chat.length - 1];
+
+            console.log(userDetails);
+
+            userDetails.lastMessage = lastMessage;
+
+            return userDetails; 
         });
 
         const userDetailsResults = await Promise.all(userDetailsPromises);
 
         userDetailsResults.forEach((userDetails) => {
             if (userDetails) {
-                completeMatchedList.push({ name: userDetails.name, photoUrl: userDetails.photoUrl, _id: userDetails._id.toString() });
-            }
+                completeMatchedList.push({ name: userDetails.name, photoUrl: userDetails.photoUrl, _id: userDetails._id.toString(), lastMessage: userDetails.lastMessage });
+            };
         });
 
         if (completeMatchedList.length === 0) {
@@ -235,16 +244,11 @@ router.post('/chatupdate/:userid', authenticateToken, async (req, res) => {
             return res.status(404).json({ message: 'Chat item not found' });
         };
 
-        console.log(chatItemToUpdate);
-        console.log(otherUserChatItemToUpdate);
-
+        //Update the chat at model
         chatItemToUpdate.chat = chatArray;
         otherUserChatItemToUpdate.chat = chatArray;
 
-        console.log(chatItemToUpdate);
-        console.log(otherUserChatItemToUpdate);
-
-        // Save the changes to the loggedInUser
+        // Save the changes
         await loggedInUser.save();
         await likedUser.save();
 
