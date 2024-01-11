@@ -172,7 +172,7 @@ router.get('/matchedlist', authenticateToken, async (req, res) => {
 
             console.log(userDetails);
 
-            userDetails.lastMessage = lastMessage;
+            userDetails.lastMessage = lastMessage.message;
 
             return userDetails; 
         });
