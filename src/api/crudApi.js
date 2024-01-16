@@ -162,19 +162,23 @@ router.get('/matchedlist', authenticateToken, async (req, res) => {
         };
 
         //Retreive last message to display at matched list
-        
+
         const userDetailsPromises = loggedInUser.matchedList.map(async (user) => {
             let userDetails = await userModel.findOne({ _id: user }, { name: 1, photoUrl: 1, _id: 1 });
 
             const chatObj = loggedInUser.chatList.find(chatItem => chatItem.users.includes(loggedInUser._id.toString()) && chatItem.users.includes(user));
 
+            //If there is no message at chat
+
             const lastMessage = chatObj.chat[chatObj.chat.length - 1];
 
-            console.log(userDetails);
+            if (lastMessage) {
+                userDetails.lastMessage = { message: lastMessage.message, sender: lastMessage.userId };
+            } else {
+                userDetails.lastMessage = { message: 'No messages yet', sender: 'No messages yet'}
+            }
 
-            userDetails.lastMessage = lastMessage.message;
-
-            return userDetails; 
+            return userDetails;
         });
 
         const userDetailsResults = await Promise.all(userDetailsPromises);
